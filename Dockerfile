@@ -1,12 +1,12 @@
 FROM node:buster
 
-ENV bat_ver 0.15.0
-ENV diskus_ver 0.6.0
-ENV fd_ver 8.0.0
-ENV fzf_ver 0.21.1
-ENV hyperfine_ver 1.9.0
-ENV ripgrep_ver 12.0.1
-ENV starship_ver 0.41.0
+ARG bat_ver=0.15.0
+ARG diskus_ver=0.6.0
+ARG fd_ver=8.0.0
+ARG fzf_ver=0.21.1
+ARG hyperfine_ver=1.9.0
+ARG ripgrep_ver=12.1.0
+ARG starship_ver=0.41.0
 
 RUN apt-get update \
   && apt-get install -y ca-certificates curl wget gnupg dirmngr xz-utils libatomic1 --no-install-recommends \
@@ -55,9 +55,12 @@ RUN apt-get update \
   && curl -fL -o starship.tar.gz "https://github.com/starship/starship/releases/download/v${starship_ver}/starship-x86_64-unknown-linux-musl.tar.gz" \
   && tar -xzvf starship.tar.gz -C /usr/local/bin \
   && rm starship.tar.gz \
+  && echo 'eval "$(starship init bash)"' >> /root/.bashrc \
   # clean
   && apt-get clean \
-  && apt-get autoremove
+  && apt-get autoremove \
+  # fix 'dh key too small'
+  && sed -i "s|DEFAULT@SECLEVEL=2|DEFAULT@SECLEVEL=1|g" /etc/ssl/openssl.cnf
 
 COPY starship.toml /root/.config
 
